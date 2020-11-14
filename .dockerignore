@@ -1,7 +1,7 @@
 **/bin
 **/obj
 **/Properties
-dockerfile
+dockerfile*
 .dockerignore
 .gitignore
 .idea

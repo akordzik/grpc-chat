@@ -20,10 +20,13 @@ namespace GrpcChat.Client
 
             Console.WriteLine("Introduce yourself.");
             var name = Console.ReadLine();
+            Console.WriteLine("Which room would you like to join?");
+            var roomNo = Console.ReadLine();
 
             var metadata = new Metadata
             {
                 new Metadata.Entry("name", name),
+                new Metadata.Entry("roomNumber", roomNo)
             };
             var options = new CallOptions(metadata);
             var ctx = new CallContext(options);

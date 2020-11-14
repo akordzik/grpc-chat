@@ -24,6 +24,7 @@ namespace GrpcChat.Server.Services
         public async IAsyncEnumerable<ChatResponse> JoinChat(IAsyncEnumerable<ChatRequest> requestStream,
             CallContext context)
         {
+            var token = context.CancellationToken;
             var (name, roomNo) = ReadParameters();
             
             var room = Rooms.GetOrAdd(roomNo, new Lazy<Room>()).Value;
@@ -42,10 +43,10 @@ namespace GrpcChat.Server.Services
                 Message = $"Welcome to Room {roomNo}!"
             };
             
-            var task = Task.Run(ReadMessages);
+            var task = Task.Run(ReadMessages, token);
             var reader = member.Messages.Reader;
             
-            while (await reader.WaitToReadAsync())
+            while (await reader.WaitToReadAsync(token))
             {
                 if (!reader.TryRead(out var msg))
                 {
@@ -58,7 +59,8 @@ namespace GrpcChat.Server.Services
                 };
             }
             
-            // it will never reach this point
+            room.Members.Remove(member.Id, out _);
+            await room.EnqueueMessage($"{member.Name} left the room.", CancellationToken.None);
             await task;
 
             (string name, int roomNo) ReadParameters() =>
@@ -66,9 +68,9 @@ namespace GrpcChat.Server.Services
 
             async ValueTask ReadMessages()
             {
-                await foreach (var x in requestStream)
+                await foreach (var x in requestStream.WithCancellation(token))
                 {
-                    await room.EnqueueMessage($"{member.Name} says: {x.Message}", CancellationToken.None);
+                    await room.EnqueueMessage($"{member.Name} says: {x.Message}", token);
                 }
             }
         }

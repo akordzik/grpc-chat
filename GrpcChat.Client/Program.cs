@@ -28,21 +28,23 @@ namespace GrpcChat.Client
                 new Metadata.Entry("name", name),
                 new Metadata.Entry("roomNumber", roomNo)
             };
-            var options = new CallOptions(metadata);
-            var ctx = new CallContext(options);
+            var cts = new CancellationTokenSource();
+            var ct = cts.Token;
+            var options = new CallOptions(metadata, cancellationToken: ct);
+            var context = new CallContext(options);
 
-            var responseStream = client.JoinChat(GetMessagesAsync(), ctx);
-            await foreach (var line in responseStream)
+            var responseStream = client.JoinChat(GetMessagesAsync(cts), context);
+            await foreach (var line in responseStream.WithCancellation(ct))
             {
                 Console.WriteLine(line.Message);
             }
         }
 
-        static async IAsyncEnumerable<ChatRequest> GetMessagesAsync()
+        static async IAsyncEnumerable<ChatRequest> GetMessagesAsync(CancellationTokenSource cts)
         {
             var line = Console.ReadLine();
 
-            while (true)
+            while (line != "quit")
             {
                 yield return new ChatRequest
                 {
@@ -50,6 +52,7 @@ namespace GrpcChat.Client
                 };
                 line = Console.ReadLine();
             }
+            cts.Cancel();
         }
     }
 }

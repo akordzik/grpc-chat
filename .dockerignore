@@ -1,0 +1,9 @@
+**/bin
+**/obj
+**/Properties
+dockerfile
+.dockerignore
+.gitignore
+.idea
+.vscode
+.sln

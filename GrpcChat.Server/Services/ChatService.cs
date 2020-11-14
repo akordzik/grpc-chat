@@ -42,16 +42,35 @@ namespace GrpcChat.Server.Services
                 Message = $"Welcome to Room {roomNo}!"
             };
             
-            await foreach (var request in requestStream)
+            var task = Task.Run(ReadMessages);
+            var reader = member.Messages.Reader;
+            
+            while (await reader.WaitToReadAsync())
             {
+                if (!reader.TryRead(out var msg))
+                {
+                    continue;
+                }
+
                 yield return new ChatResponse
                 {
-                    Message = $"{member.Name} says: {request.Message}"
+                    Message = msg
                 };
             }
+            
+            // it will never reach this point
+            await task;
 
             (string name, int roomNo) ReadParameters() =>
                 (context.RequestHeaders.Get("name").Value, int.Parse(context.RequestHeaders.Get("roomnumber").Value));
+
+            async ValueTask ReadMessages()
+            {
+                await foreach (var x in requestStream)
+                {
+                    await room.EnqueueMessage($"{member.Name} says: {x.Message}", CancellationToken.None);
+                }
+            }
         }
     }
 }

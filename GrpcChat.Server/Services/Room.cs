@@ -16,5 +16,8 @@ namespace GrpcChat.Server.Services
                 await chatMember.Value.Messages.Writer.WriteAsync(msg, ct);
             }
         }
+
+        public ValueTask EnqueueMessage(Guid memberId, string msg, CancellationToken ct) =>
+            Members[memberId].Messages.Writer.WriteAsync(msg, ct);
     }
 }

@@ -37,12 +37,8 @@ namespace GrpcChat.Server.Services
             }
             
             _logger.LogInformation($"{member.Id} connected to room {roomNo}");
+            await room.EnqueueMessage(member.Id, $"Welcome to Room {roomNo}!", token);
             await room.EnqueueMessage($"{member.Name} joined the room.", token);
-            
-            yield return new ChatResponse
-            {
-                Message = $"Welcome to Room {roomNo}!"
-            };
             
             var task = Task.Run(ReadMessages, token);
             var reader = member.Messages.Reader;

@@ -18,7 +18,17 @@ namespace GrpcChat.Client
             var channel = GrpcChannel.ForAddress("http://localhost:9696");
             var client = channel.CreateGrpcService<IChatService>();
 
-            var responseStream = client.JoinChat(GetMessagesAsync(), new CallContext());
+            Console.WriteLine("Introduce yourself.");
+            var name = Console.ReadLine();
+
+            var metadata = new Metadata
+            {
+                new Metadata.Entry("name", name),
+            };
+            var options = new CallOptions(metadata);
+            var ctx = new CallContext(options);
+
+            var responseStream = client.JoinChat(GetMessagesAsync(), ctx);
             await foreach (var line in responseStream)
             {
                 Console.WriteLine(line.Message);

@@ -21,11 +21,15 @@ namespace GrpcChat.Server.Services
         public async IAsyncEnumerable<ChatResponse> JoinChat(IAsyncEnumerable<ChatRequest> requestStream,
             CallContext context)
         {
+            var name = context.RequestHeaders.Get("name").Value;
+            var member = new ChatMember(name);
+            _logger.LogInformation($"{member.Id} connected");
+            
             await foreach (var request in requestStream)
             {
                 yield return new ChatResponse
                 {
-                    Message = request.Message
+                    Message = $"{member.Name} says: {request.Message}"
                 };
             }
         }

@@ -37,6 +37,7 @@ namespace GrpcChat.Server.Services
             }
             
             _logger.LogInformation($"{member.Id} connected to room {roomNo}");
+            await room.EnqueueMessage($"{member.Name} joined the room.", token);
             
             yield return new ChatResponse
             {
@@ -46,7 +47,7 @@ namespace GrpcChat.Server.Services
             var task = Task.Run(ReadMessages, token);
             var reader = member.Messages.Reader;
             
-            while (await reader.WaitToReadAsync(token))
+            while (await AwaitMessage())
             {
                 if (!reader.TryRead(out var msg))
                 {
@@ -68,9 +69,28 @@ namespace GrpcChat.Server.Services
 
             async ValueTask ReadMessages()
             {
-                await foreach (var x in requestStream.WithCancellation(token))
+                try
                 {
-                    await room.EnqueueMessage($"{member.Name} says: {x.Message}", token);
+                    await foreach (var x in requestStream.WithCancellation(token))
+                    {
+                        await room.EnqueueMessage($"{member.Name} says: {x.Message}", token);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogInformation($"{member.Id} disconnected from room {roomNo}");
+                }
+            }
+
+            async ValueTask<bool> AwaitMessage()
+            {
+                try
+                {
+                    return await reader.WaitToReadAsync(token);
+                }
+                catch (OperationCanceledException)
+                {
+                    return false;
                 }
             }
         }

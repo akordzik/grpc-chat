@@ -34,10 +34,14 @@ namespace GrpcChat.Client
             var context = new CallContext(options);
 
             var responseStream = client.JoinChat(GetMessagesAsync(cts), context);
-            await foreach (var line in responseStream.WithCancellation(ct))
+            try
             {
-                Console.WriteLine(line.Message);
+                await foreach (var line in responseStream.WithCancellation(ct))
+                {
+                    Console.WriteLine(line.Message);
+                }
             }
+            catch (RpcException){}
         }
 
         static async IAsyncEnumerable<ChatRequest> GetMessagesAsync(CancellationTokenSource cts)

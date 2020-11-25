@@ -5,8 +5,7 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.123" />
-        <PackageReference Include="protobuf-net.Grpc.AspNetCore.Reflection" Version="1.0.123" />
-        <PackageReference Include="System.Private.ServiceModel" Version="4.7.0" />
+        <PackageReference Include="System.ServiceModel.Primitives" Version="4.8.0" />
     </ItemGroup>
 
 </Project>

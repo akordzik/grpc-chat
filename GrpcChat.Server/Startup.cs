@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using ProtoBuf.Grpc.Server;
 
 namespace GrpcChat.Server
@@ -18,7 +19,10 @@ namespace GrpcChat.Server
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapCodeFirstGrpcReflectionService();
+                if (env.IsDevelopment())
+                {
+                    endpoints.MapCodeFirstGrpcReflectionService();
+                }
             });
         }
     }

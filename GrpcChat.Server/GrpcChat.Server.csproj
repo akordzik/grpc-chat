@@ -7,5 +7,9 @@
     <ItemGroup>
       <ProjectReference Include="..\GrpcChat.Contracts\GrpcChat.Contracts.csproj" />
     </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="protobuf-net.Grpc.AspNetCore.Reflection" Version="1.0.123" />
+    </ItemGroup>
 
 </Project>
